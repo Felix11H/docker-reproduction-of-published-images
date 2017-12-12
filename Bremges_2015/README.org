@@ -1,0 +1,13 @@
+Contains the Dockerfile for
+
+#+BEGIN_QUOTE
+Bremges et al. (2015) /Deeply sequenced metagenome and metatranscriptome of a biogas-producing microbial community from an agricultural production-scale biogas plant/ [[https://gigascience.biomedcentral.com/articles/10.1186/s13742-015-0073-6][gigascience.biomedcentral.com]] Code: [[https://github.com/metagenomics/2015-biogas-cebitec][github.com]]
+#+END_QUOTE
+
+
+*Success of compiling the image*
+
+ - 2017-12-12 :: 
+
+
+  
