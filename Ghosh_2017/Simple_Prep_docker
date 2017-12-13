@@ -1,0 +1,74 @@
+#!/bin/bash
+#emacs: -*- mode: shell-script; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- 
+#ex: set sts=4 ts=4 sw=4 noet:
+# ## ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
+#
+#   See COPYING file distributed along with the simple_workflow package for the
+#   copyright and license terms.
+#
+# ## ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
+#
+# Helper to generate a Docker instance given release and snapshots date specification
+# and run simple_workflow analysis
+#
+set -e
+export PS4=+
+#set -x
+set -u
+
+# a little helper since sed on OSX does not have sed -i
+# for in-place modifications.  Note that filename here comes first
+# just to ease scripting
+sed-i () {
+  filename=$1
+  tfilename=$(mktemp -t sed_replace.XXXXXXXXX)
+  shift
+  sed "$@" "$filename" >| "$tfilename"
+  mv "$tfilename" "$filename"
+}
+
+DL_DIST=${1:-jessie}
+DL_DATE=${2:-}
+
+cd `dirname $0`
+dockerfile=./Simple_Prep_docker-Dockerfile
+# echo "D: $DL_APT"
+# Some substitutes aren't used but left for possibly later use
+sed -e "s,DL_DIST,$DL_DIST,g" \
+    -e "s,DL_USER,$USER,g" \
+    -e "s,DL_UID,`id -u`,g" \
+    -e "s,DL_GID,`id -g`,g" \
+    -e "s,DL_GIT_USER_EMAIL,`git config --get user.email`,g" \
+    -e "s,DL_GIT_USER_NAME,`git config --get user.name`,g" \
+    $dockerfile.in >| $dockerfile
+
+if [ ! -z "$DL_DATE" ]; then
+{
+    # replace with snapshots.  Since ran inside the container, sed -i should be ok
+    echo "sed -i -e 's,http://neuro.debian.net/debian/* ,http://snapshot-neuro.debian.net:5002/archive/neurodebian/$DL_DATE/ ,g' etc/apt/sources.list.d/neurodebian.sources.list"
+    # for now we need to knock to expose snapshots repository
+    echo "curl -s http://neuro.debian.net/_files/knock-snapshots;"
+    # TODO: figure out and add snapshot for DL_DIST itself if available and force possible downgrade somehow
+    echo "eatmydata apt-get update; eatmydata apt-get dist-upgrade -y;"
+} | while read aptline; do
+    # on OSX cannot use \n to get a newline in sed, so doing POSIX way, although also escaping trailing \
+    # so it is in effect within sed-i call
+    sed-i "$dockerfile" -e "s|\(\(.*\)DL_APT\(.*\)\)|\2$aptline\3\\
+\1|g"
+    :
+done
+fi
+
+# for debugging
+# cat $dockerfile
+sed-i "$dockerfile" -e '/DL_APT/d'
+
+tag_=simple_prep_${USER}_${DL_DIST}_${DL_DATE}
+tag=repronim:${tag_}
+echo "I: tag $tag"
+if [ $(command -v docker) ]; then
+    docker build -t $tag -f $dockerfile .
+else
+    echo "Could not find docker. Please install and rerun script"
+    exit 1
+fi
