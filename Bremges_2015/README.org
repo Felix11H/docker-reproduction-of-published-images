@@ -7,7 +7,7 @@ Bremges et al. (2015) /Deeply sequenced metagenome and metatranscriptome of a bi
 
 *Success of compiling the image*
 
- - 2017-12-12 :: 
+ - 2017-12-12 :: did not compile
 
 
   
