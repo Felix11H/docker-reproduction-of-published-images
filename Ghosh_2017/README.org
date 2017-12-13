@@ -1,0 +1,14 @@
+Contains the Dockerfile for
+
+#+BEGIN_QUOTE
+Ghosh SS, Poline JB, Keator DB et al. A very simple, re-executable neuroimaging publication [version 2; referees: 1 approved, 3 approved with reservations]. F1000Research 2017, 6:124 doi:10.12688/f1000research.10783.2
+#+END_QUOTE
+
+from https://doi.org/10.5281/zenodo.800757.
+
+*Success of compiling the image*
+
+ - 2017-12-13 :: 
+
+
+  
